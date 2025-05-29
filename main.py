@@ -33,76 +33,75 @@ def processcommand(c):
        webbrowser.open("https://www.github.com/")
        
    elif "play song" in c.lower():
-        # r = sr.Recognizer()
+        r = sr.Recognizer()
         with sr.Microphone() as source:
             speak("What do you want to play?.....")
-            audio = speech.listen(source, timeout=2, phrase_time_limit= 1)
+            audio = r.listen(source, timeout=2, phrase_time_limit= 1)
                 
-            song = speech.recognize_google(audio).strip().lower()
+            song = r.recognize_google(audio).strip().lower()
             link = musiclibrary.music[song]
             webbrowser.open(link)
 
+
    elif "news" in c.lower():
     try:
-        r = requests.get(url)
-        if r.status_code == 200:
-            data = r.json()
+        recognizer = sr.Recognizer()
+        req = requests.get(url)
+        if req.status_code == 200:
+            data = req.json()
             articles = data.get('articles', [])
             
             if not articles:
                 print("No articles found.")
-                engine.say("Sorry, no news articles found.")
-                engine.runAndWait()
+                speak("Sorry, no news articles found.")
             else:
                 print(f"Here are the top {len(articles)} headlines:\n")
-                engine.say("Here are the top news headlines.")
-                engine.runAndWait()
+                speak("Here are the top news headlines.")
                 
                 for i, article in enumerate(articles[:10]):  # limit to 10
                     title = article.get('title', 'No Title')
                     source = article.get('source', {}).get('name', 'Unknown Source')
                     print(f"{i + 1}. {title} - {source}")
-                    engine.say(f"Headline {i + 1}: {title}")
-                    engine.runAndWait()
+                    speak(f"Headline {i + 1}: {title}")
                 
                 # Repeatedly ask user for article until they say 'stop'
                 while True:
-                    engine.say("Which article number would you like me to read in detail? Say stop to end.")
-                    engine.runAndWait()
-                    choice = input("\nEnter article number or type 'stop' to exit: ").strip().lower()
+                    speak("Which article number would you like me to read in detail? Say stop to end.")
 
-                    if choice == 'stop':
-                        engine.say("Okay, stopping the news reader.")
-                        engine.runAndWait()
-                        break
-                    elif choice.isdigit():
-                        index = int(choice) - 1
-                        if 0 <= index < len(articles):
-                            selected = articles[index]
-                            print(f"\nTitle: {selected['title']}")
-                            print(f"Description: {selected.get('description', 'No description')}")
-                            print(f"URL: {selected.get('url')}")
-
-                            engine.say("Here's more about it:")
-                            engine.say(selected.get('description', 'No description available.'))
-                            engine.runAndWait()
-                        else:
-                            print("Invalid selection.")
-                            engine.say("That is an invalid selection.")
-                            engine.runAndWait()
-                    else:
-                        print("Invalid input.")
-                        engine.say("Invalid input. Please enter a number or say stop.")
-                        engine.runAndWait()
+                    with sr.Microphone() as source:
+                        try:
+                            speak("Listening...")
+                            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+                            response = recognizer.recognize_google(audio).lower()
+                            print(f"You said: {response}")
+                            
+                            if 'stop' in response:
+                                speak("Okay, stopping the news reader.")
+                                break
+                            elif response.isdigit():
+                                index = int(response) - 1
+                                if 0 <= index < len(articles):
+                                    selected = articles[index]
+                                    print(f"\nTitle: {selected['title']}")
+                                    print(f"Description: {selected.get('description', 'No description')}")
+                                    print(f"URL: {selected.get('url')}")
+                                    speak("Here's more about it:")
+                                    speak(selected.get('description', 'No description available.'))
+                                else:
+                                    print("Invalid selection.")
+                                    speak("That is an invalid selection.")
+                            else:
+                                speak("Invalid input. Please say a number or say stop.")
+                        except sr.UnknownValueError:
+                            speak("Sorry, I didn't catch that. Please repeat.")
+                        except sr.WaitTimeoutError:
+                            speak("I didn't hear anything. Please try again.")
         else:
             print("Failed to fetch news.")
-            engine.say("Sorry, I couldn't fetch the news.")
-            engine.runAndWait()
+            speak("Sorry, I couldn't fetch the news.")
     except Exception as e:
         print(f"An error occurred: {e}")
-        engine.say("An error occurred while fetching the news.")
-        engine.runAndWait()
-
+        speak("An error occurred while fetching the news.")
 
    elif "stop" in c.lower():
         speak("Shutting down.")
