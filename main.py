@@ -6,6 +6,8 @@ import requests
 
 speech = sr.Recognizer()
 engine = pyttsx3.init()
+
+
 # Set NewsAPI Key
 newsapi = "e5fedcb981d24ec6ad52b536c5385ccd"
 url = f"https://newsapi.org/v2/top-headlines?language=en&apiKey={newsapi}"

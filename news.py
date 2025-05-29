@@ -24,10 +24,27 @@ try:
             print("No articles found.")
             speak("Sorry, no news articles found.")
         else:
-            print(f"Here are the top {len(articles)} headlines:\n")
-            speak("Here are the top news headlines.")
             
-            for i, article in enumerate(articles[:10]):  # limit to 10
+            # Ask user how many headlines they want
+            try:
+                with sr.Microphone() as source:
+                    speak("How many news headlines do you want to listen to?")
+                    audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+                    n_text = recognizer.recognize_google(audio).lower()
+                    print(f"You said: {n_text}")
+                    
+                    # Extract number safely
+                    n = int(''.join(filter(str.isdigit, n_text)))
+                    n = min(n, 10)  # cap at 10
+            except Exception as e:
+                print(f"Could not understand number: {e}")
+                speak("Sorry, I couldn't understand the number. Defaulting to 5 headlines.")
+                n = 5
+
+            print(f"\nHere are the top {n} headlines:\n")
+            speak(f"Here are the top {n} news headlines.")
+            
+            for i, article in enumerate(articles[:n]):  # limit to 10
                 title = article.get('title', 'No Title')
                 source = article.get('source', {}).get('name', 'Unknown Source')
                 print(f"{i + 1}. {title} - {source}")
