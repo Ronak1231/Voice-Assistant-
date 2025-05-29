@@ -39,8 +39,12 @@ def processcommand(c):
             audio = r.listen(source, timeout=2, phrase_time_limit= 1)
                 
             song = r.recognize_google(audio).strip().lower()
-            link = musiclibrary.music[song]
-            webbrowser.open(link)
+            
+            if song in musiclibrary.music:
+                webbrowser.open(musiclibrary.music[song])
+            else:
+                speak("Sorry, I couldn't find that song.")
+
 
 
    elif "news" in c.lower():
@@ -104,8 +108,17 @@ def processcommand(c):
         speak("An error occurred while fetching the news.")
 
    elif "stop" in c.lower():
-        speak("Shutting down.")
-        return False
+        speak("Do you really want to shut me down? Say yes to confirm.")
+        with sr.Microphone() as source:
+            audio = speech.listen(source, timeout=5, phrase_time_limit=3)
+            confirmation = speech.recognize_google(audio).lower()
+            if "yes" in confirmation:
+                speak("Shutting down.")
+                return False
+            else:
+                speak("Shutdown canceled.")
+
+    
                     
    else:
        pass
@@ -127,12 +140,11 @@ while keep_running :
                 print("Listining.....")
                 audio = r.listen(source, timeout=5, phrase_time_limit= 3)
             word = r.recognize_google(audio)
-            speak(word)
+            # speak(word)
             if(word.lower() == "jarvis"):
                 speak("Yes? ")
                 with sr.Microphone() as source:
                     print("jarvis Active.....")
-                    # r.adjust_for_ambient_noise(source, duration=1)
                     audio = r.listen(source)
                     command = r.recognize_google(audio)
 
