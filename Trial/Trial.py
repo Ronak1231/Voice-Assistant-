@@ -11,13 +11,13 @@ import google.generativeai as genai
 load_dotenv()
 GOOGLE_GEMINI_KEY = os.getenv("GOOGLE_GEMINI_KEY")
 
+# Set NewsAPI Key
+newsapi = os.getenv("newsapi")
+url = f"https://newsapi.org/v2/top-headlines?language=en&apiKey={newsapi}"
+
+
 speech = sr.Recognizer()
 engine = pyttsx3.init()
-
-
-# Set NewsAPI Key
-newsapi = "e5fedcb981d24ec6ad52b536c5385ccd"
-url = f"https://newsapi.org/v2/top-headlines?language=en&apiKey={newsapi}"
 
 def speak(text):
     engine.say(text)

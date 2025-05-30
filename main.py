@@ -24,8 +24,6 @@ def speak(text):
     engine.runAndWait()
 
 
-
-
 def aiprocess(command):
     genai.configure(api_key=GOOGLE_GEMINI_KEY)
 
@@ -46,7 +44,7 @@ def aiprocess(command):
 
 
 
-def processcommand(c):
+def process_command(c):
    if "open google" in c.lower():
        webbrowser.open("https://www.google.com/")
        speak("opening google...")
@@ -90,10 +88,22 @@ def processcommand(c):
                 print("No articles found.")
                 speak("Sorry, no news articles found.")
             else:
-                print(f"Here are the top {len(articles)} headlines:\n")
-                speak("Here are the top news headlines.")
+                speak("Number of news you want: ")
+                with sr.Microphone() as source:
+                        print("Listining.....")
+                        audio = r.listen(source, timeout=5, phrase_time_limit= 3)
+                try:
+                    n = int(r.recognize_google(audio))
+                except ValueError:
+                    speak("Sorry, I couldn't understand the number. Please try again.")
+                    return
                 
-                for i, article in enumerate(articles[:10]):  # limit to 10
+
+                
+                print(f"Here are the top {n} headlines:\n")
+                speak(f"Here are the top {n} news headlines.")
+                
+                for i, article in enumerate(articles[:n]): 
                     title = article.get('title', 'No Title')
                     source = article.get('source', {}).get('name', 'Unknown Source')
                     print(f"{i + 1}. {title} - {source}")
@@ -147,43 +157,37 @@ def processcommand(c):
                 speak("Shutting down.")
                 return False
             else:
-                speak("Shutdown canceled.")
+                speak("Shutdown canceled.")         
 
-    
-                    
+
    else:
        aiprocess(c)
        return True
 
 
 
-if __name__ == "__main__":
-    speak("Initilized Javis...")
-keep_running = True
 
-while keep_running :
-        r = sr.Recognizer()
-        
-        print("Recognizing....")
+def main():
+    speak("Initialized Jarvis...")
+    keep_running = True
+    recognizer = sr.Recognizer()
 
-        # recognize speech using google
+    while keep_running:
         try:
             with sr.Microphone() as source:
-                print("Listining.....")
-                audio = r.listen(source, timeout=5, phrase_time_limit= 3)
-            word = r.recognize_google(audio)
-            # speak(word)
-            if(word.lower() == "jarvis"):
-                speak("Yes? ")
-                with sr.Microphone() as source:
-                    print("jarvis Active.....")
-                    audio = r.listen(source)
-                    command = r.recognize_google(audio)
-
-                    keep_running  = processcommand(command)
-
-
-
+                print("Listening for wake word...")
+                audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
+                word = recognizer.recognize_google(audio)
+                if word.lower() == "jarvis":
+                    speak("Yes?")
+                    with sr.Microphone() as source:
+                        print("Jarvis active...")
+                        audio = recognizer.listen(source)
+                        command = recognizer.recognize_google(audio)
+                        keep_running = process_command(command)
         except Exception as e:
-            print("Error; {0}".format(e))
+            print(f"Error: {e}")
 
+
+if __name__ == "__main__":
+    main()
