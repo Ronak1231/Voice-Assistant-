@@ -3,6 +3,13 @@ import webbrowser
 import pyttsx3
 import musiclibrary
 import requests
+from dotenv import load_dotenv
+import os
+import google.generativeai as genai
+
+# Load environment variables
+load_dotenv()
+GOOGLE_GEMINI_KEY = os.getenv("GOOGLE_GEMINI_KEY")
 
 speech = sr.Recognizer()
 engine = pyttsx3.init()
@@ -15,6 +22,28 @@ url = f"https://newsapi.org/v2/top-headlines?language=en&apiKey={newsapi}"
 def speak(text):
     engine.say(text)
     engine.runAndWait()
+
+
+
+
+def aiprocess(command):
+    genai.configure(api_key=GOOGLE_GEMINI_KEY)
+
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+    system_prompt = """
+    You are a virtual assistant named Jarvis. 
+    You can answer general questions, assist with tasks, and behave like a helpful AI (similar to Alexa or Google Assistant).
+    """
+
+    # Use actual voice command
+    user_question = command
+
+    response = model.generate_content([system_prompt, user_question])
+    print("Jarvis:", response.text)
+    speak(response.text)
+    return True
+
 
 
 def processcommand(c):
@@ -123,7 +152,8 @@ def processcommand(c):
     
                     
    else:
-       pass
+       aiprocess(c)
+       return True
 
 
 

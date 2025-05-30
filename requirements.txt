@@ -1,4 +1,6 @@
-openai
-requests
-pyttsx3
 speechrecognition
+pyttsx3
+requests
+dotenv
+google-generativeai
+pyaudio
